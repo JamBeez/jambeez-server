@@ -13,7 +13,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @EnableWebSocket
 class WebSocketConfig : WebSocketConfigurer {
     override fun registerWebSocketHandlers(registry: WebSocketHandlerRegistry) {
-        registry.addHandler(jamBeezWebSocket(), "/jambeez")
+        registry.addHandler(jamBeezWebSocket(), "/jambeez").setAllowedOrigins("*")
     }
 
     @Bean
