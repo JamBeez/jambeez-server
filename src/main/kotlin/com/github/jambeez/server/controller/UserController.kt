@@ -12,6 +12,4 @@ class UserController {
         users.add(newUser)
         return newUser
     }
-
-    fun validate(user: User): Boolean = users.any { it.id == user.id }
 }

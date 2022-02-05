@@ -3,41 +3,44 @@ package com.github.jambeez.server
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.github.jambeez.server.controller.JamSessionController
 import com.github.jambeez.server.controller.UserController
+import com.github.jambeez.server.domain.JamSession
+import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.Intent
 import com.github.jambeez.server.worker.JamWorker
-import org.springframework.web.socket.BinaryMessage
-import org.springframework.web.socket.CloseStatus
-import org.springframework.web.socket.TextMessage
-import org.springframework.web.socket.WebSocketSession
+import org.springframework.web.socket.*
 import org.springframework.web.socket.handler.AbstractWebSocketHandler
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
-data class WebsocketSessionData(
-    val websocketSession: WebSocketSession, val userController: UserController, val jamSessionController: JamSessionController
+interface JamSessionInformer {
+    fun informAllMembers(jamSession: JamSession, webSocketMessage: WebSocketMessage<*>)
+}
+
+data class WebsocketConnectionData(
+    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer,
+    val userController: UserController, val jamSessionController: JamSessionController, val user: User
 )
 
-
-class JamBeezWebSocketHandler : AbstractWebSocketHandler() {
+class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
     private val objectMapper: ObjectMapper = createObjectMapper()
     private val executors = Executors.newCachedThreadPool()
 
-    private val sessions: MutableMap<String, WebsocketSessionData> = ConcurrentHashMap<String, WebsocketSessionData>()
+    private val connections: MutableMap<String, WebsocketConnectionData> = ConcurrentHashMap<String, WebsocketConnectionData>()
 
     private val jamSessionController = JamSessionController()
     private val userController = UserController()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
-        sessions[session.id] = WebsocketSessionData(
-            ConcurrentWebSocketSessionDecorator(session, 2000, 4096), userController, jamSessionController
+        connections[session.id] = WebsocketConnectionData(
+            ConcurrentWebSocketSessionDecorator(session, 2000, 4096), this, userController, jamSessionController, userController.createUser()
         )
         super.afterConnectionEstablished(session)
     }
 
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
-        sessions.remove(session.id)
+        connections.remove(session.id)
         super.afterConnectionClosed(session, status)
     }
 
@@ -50,11 +53,16 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler() {
         logger.debug("Got Text from $session : $message")
         val intent: Intent = objectMapper.readValueOrNull(message.asBytes()) ?: return
         logger.debug("JamRequest is $intent")
-        val sessionData = sessions[session.id]
-        if (sessionData == null) {
+        val connectionData = connections[session.id]
+        if (connectionData == null) {
             logger.debug("Unknown session found $session")
             return
         }
-        executors.submit(JamWorker(sessionData, message, intent.intent))
+        executors.submit(JamWorker(connectionData, message, intent.intent))
+    }
+
+    override fun informAllMembers(jamSession: JamSession, webSocketMessage: WebSocketMessage<*>) {
+        val connections = connections.values.filter { wssd -> jamSession.owner == wssd.user || jamSession.members.contains(wssd.user) }
+        connections.forEach { wssd -> wssd.websocketSession.sendMessage(webSocketMessage) }
     }
 }

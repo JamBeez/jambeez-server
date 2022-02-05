@@ -2,14 +2,11 @@ package com.github.jambeez.server.controller
 
 import com.github.jambeez.server.domain.JamSession
 import com.github.jambeez.server.domain.User
-import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
 import java.util.*
 
 class JamSessionController {
 
     private val jamSessions: MutableList<JamSession> = mutableListOf()
-
 
     fun newSession(user: User): JamSession {
         val newSession = JamSession(UUID.randomUUID().toString(), user)
@@ -19,11 +16,14 @@ class JamSessionController {
 
 
     fun joinSession(sessionId: String, user: User): JamSession {
-        val jamSession = jamSessions.find { s -> s.id == sessionId }
-        if (jamSession == null) {
-            throw ResponseStatusException(HttpStatus.NOT_FOUND, "Your jam session does not exist :(")
+        if (findJamSession(user) != null) {
+            throw IllegalArgumentException("User already in JamSession")
         }
 
+        val jamSession = jamSessions.find { s -> s.id == sessionId } ?: throw IllegalArgumentException("Your jam session does not exist :(")
+        jamSession.members.add(user)
         return jamSession
     }
+
+    fun findJamSession(user: User) = jamSessions.find { js -> js.members.contains(user) || js.owner == user }
 }
