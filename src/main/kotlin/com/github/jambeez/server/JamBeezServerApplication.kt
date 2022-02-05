@@ -7,5 +7,5 @@ import org.springframework.boot.runApplication
 class JamBeezServerApplication
 
 fun main(args: Array<String>) {
-	runApplication<JamBeezServerApplication>(*args)
+    runApplication<JamBeezServerApplication>(*args)
 }
