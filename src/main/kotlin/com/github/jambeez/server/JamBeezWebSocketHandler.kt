@@ -6,10 +6,12 @@ import com.github.jambeez.server.controller.UserController
 import com.github.jambeez.server.domain.JamSession
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.Intent
+import com.github.jambeez.server.domain.intent.IntentMessage
 import com.github.jambeez.server.worker.JamWorker
 import org.springframework.web.socket.*
 import org.springframework.web.socket.handler.AbstractWebSocketHandler
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
@@ -47,7 +49,16 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
 
 
     override fun handleBinaryMessage(session: WebSocketSession, message: BinaryMessage) {
-        logger.debug("Got Message from $session : $message")
+        logger.debug("Got Binary Message from $session : $message")
+        // Try to convert to string
+        try {
+            val messageAsString = StandardCharsets.UTF_8.decode(message.payload).toString()
+            handleTextMessage(session, TextMessage(messageAsString))
+        } catch (e: Exception) {
+            logger.error(e.message, e)
+            IntentMessage("error:binary_not_string", "Binary content is no string").send(session)
+        }
+
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
