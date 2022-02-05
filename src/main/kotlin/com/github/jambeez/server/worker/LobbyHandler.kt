@@ -10,8 +10,8 @@ data class JoinRequest(val sessionId: String)
 class LobbyHandler : Handler() {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
-            "lobby:create" -> createLobby(connectionData, message, intent)
-            "lobby:join" -> joinLobby(connectionData, message, intent)
+            LOBBY_CREATE -> createLobby(connectionData, message, intent)
+            LOBBY_JOIN -> joinLobby(connectionData, message, intent)
             else -> unknown(LobbyHandler::class.java, connectionData, intent)
         }
     }
@@ -29,6 +29,6 @@ class LobbyHandler : Handler() {
         // Send lobby to me
         IntentWrapper(intent, session).send(connectionData)
         // Send to others
-        connectionData.jamSessionInformer.informAllOtherUsers(session, connectionData.user, IntentWrapper("user:joined", connectionData.user).payload())
+        connectionData.jamSessionInformer.informAllOtherUsers(session, connectionData.user, IntentWrapper(USER_JOINED, connectionData.user).payload())
     }
 }

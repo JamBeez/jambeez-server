@@ -9,9 +9,9 @@ class JamWorker(private val connectionData: WebsocketConnectionData, private val
         val globalIntent = intent.split(Regex(":"))[0]
         try {
             when (globalIntent) {
-                "lobby" -> LobbyHandler().handle(connectionData, message, intent)
-                "user" -> UserHandler().handle(connectionData, message, intent)
-                "part" -> PartHandler().handle(connectionData, message, intent)
+                LOBBY -> LobbyHandler().handle(connectionData, message, intent)
+                USER -> UserHandler().handle(connectionData, message, intent)
+                PART -> PartHandler().handle(connectionData, message, intent)
                 else -> unknown(null, connectionData, intent)
             }
         } catch (e: Exception) {

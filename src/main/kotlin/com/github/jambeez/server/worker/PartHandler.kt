@@ -7,7 +7,7 @@ import org.springframework.web.socket.TextMessage
 class PartHandler : Handler() {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
-            "part:change_bpm" -> changeBPM(connectionData, message, intent)
+            PART_CHANGE_BPM -> changeBPM(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
     }
