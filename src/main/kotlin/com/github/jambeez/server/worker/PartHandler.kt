@@ -13,15 +13,15 @@ class PartHandler : Handler() {
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        val jamSession = connectionData.jamSessionController.findJamSession(connectionData.user) ?: throw WorkerException("User not in JamSession")
+        val lobby = connectionData.lobbyController.findLobby(connectionData.user) ?: throw WorkerException("User not in Lobby")
         val changeRequest: ChangeRequest = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("ChangeRequest could not be deserialized")
 
-        if (jamSession.parts.size <= changeRequest.partId) {
+        if (lobby.parts.size <= changeRequest.partId) {
             throw WorkerException("Invalid PartId")
         }
 
-        jamSession.parts[changeRequest.partId].beatsPerMinute = changeRequest.bpm
-        connectionData.jamSessionInformer.informAllOtherUsers(jamSession, null, message)
+        lobby.parts[changeRequest.partId].beatsPerMinute = changeRequest.bpm
+        connectionData.lobbyInformer.informAllOtherUsers(lobby, null, message)
     }
 
 }

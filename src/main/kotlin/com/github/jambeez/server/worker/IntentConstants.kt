@@ -4,6 +4,7 @@ package com.github.jambeez.server.worker
 const val LOBBY = "lobby"
 const val LOBBY_CREATE = "lobby:create"
 const val LOBBY_JOIN = "lobby:join"
+const val LOBBY_UPDATE_PARTS = "lobby:update_parts"
 
 // User Related
 const val USER = "user"

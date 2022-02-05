@@ -15,27 +15,27 @@ import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
-interface JamSessionInformer {
-    fun informAllOtherUsers(jamSession: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>)
+interface LobbyInformer {
+    fun informAllOtherUsers(lobby: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>)
 }
 
 data class WebsocketConnectionData(
-    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer, val userController: UserController, val jamSessionController: LobbyController, val user: User
+    val websocketSession: WebSocketSession, val lobbyInformer: LobbyInformer, val userController: UserController, val lobbyController: LobbyController, val user: User
 )
 
-class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
+class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
     private val objectMapper: ObjectMapper = createObjectMapper()
     private val executors = Executors.newCachedThreadPool()
 
     private val connections: MutableMap<String, WebsocketConnectionData> = ConcurrentHashMap<String, WebsocketConnectionData>()
 
-    private val jamSessionController = LobbyController()
+    private val lobbyController = LobbyController()
     private val userController = UserController()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.debug("Connection Established to $session")
         connections[session.id] = WebsocketConnectionData(
-            ConcurrentWebSocketSessionDecorator(session, 2000, 4096), this, userController, jamSessionController, userController.createUser()
+            ConcurrentWebSocketSessionDecorator(session, 2000, 4096), this, userController, lobbyController, userController.createUser()
         )
         super.afterConnectionEstablished(session)
     }
@@ -73,8 +73,8 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
         executors.submit(JamWorker(connectionData, message, intent.intent))
     }
 
-    override fun informAllOtherUsers(jamSession: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>) {
-        val connections = connections.values.filter { wssd -> wssd.user != user && jamSession.users.contains(wssd.user) }
+    override fun informAllOtherUsers(lobby: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>) {
+        val connections = connections.values.filter { wssd -> wssd.user != user && lobby.users.contains(wssd.user) }
         connections.forEach { wssd -> wssd.websocketSession.sendMessage(webSocketMessage) }
     }
 }

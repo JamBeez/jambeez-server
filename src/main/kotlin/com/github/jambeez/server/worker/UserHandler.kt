@@ -23,7 +23,7 @@ class UserHandler : Handler() {
         val result = IntentWrapper(intent, connectionData.user)
         result.send(connectionData)
 
-        val jamSession = connectionData.jamSessionController.findJamSession(connectionData.user) ?: return
-        connectionData.jamSessionInformer.informAllOtherUsers(jamSession, connectionData.user, result.payload())
+        val lobby = connectionData.lobbyController.findLobby(connectionData.user) ?: return
+        connectionData.lobbyInformer.informAllOtherUsers(lobby, connectionData.user, result.payload())
     }
 }

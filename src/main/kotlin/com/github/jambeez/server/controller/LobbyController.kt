@@ -7,25 +7,25 @@ import java.util.*
 class LobbyController {
 
     // TODO REMOVE DEBUG LOBBY
-    private val jamSessions: MutableList<Lobby> = mutableListOf(Lobby("DEBUG"))
+    private val lobbys: MutableList<Lobby> = mutableListOf(Lobby("DEBUG"))
 
     fun createLobby(user: User): Lobby {
         val newSession = Lobby(UUID.randomUUID().toString())
         newSession.users.add(user)
-        jamSessions.add(newSession)
+        lobbys.add(newSession)
         return newSession
     }
 
 
     fun joinLobby(sessionId: String, user: User): Lobby {
-        if (findJamSession(user) != null) {
-            throw IllegalArgumentException("User already in JamSession")
+        if (findLobby(user) != null) {
+            throw IllegalArgumentException("User already in Lobby")
         }
 
-        val jamSession = jamSessions.find { s -> s.id == sessionId } ?: throw IllegalArgumentException("Your jam session does not exist :(")
-        jamSession.users.add(user)
-        return jamSession
+        val lobbys = lobbys.find { s -> s.id == sessionId } ?: throw IllegalArgumentException("Your jam session does not exist :(")
+        lobbys.users.add(user)
+        return lobbys
     }
 
-    fun findJamSession(user: User) = jamSessions.find { js -> js.users.contains(user) }
+    fun findLobby(user: User) = lobbys.find { js -> js.users.contains(user) }
 }
