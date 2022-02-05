@@ -5,7 +5,7 @@ COPY src src
 COPY pom.xml pom.xml
 RUN mvn clean package
 
-FROM eclipse-temurin:17-alpine
+FROM eclipse-temurin:17
 ENV TZ=Europe/Berlin
 
 WORKDIR /usr/src/jambeez
