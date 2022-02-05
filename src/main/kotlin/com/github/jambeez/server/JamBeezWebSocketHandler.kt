@@ -1,9 +1,9 @@
 package com.github.jambeez.server
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.jambeez.server.controller.JamSessionController
+import com.github.jambeez.server.controller.LobbyController
 import com.github.jambeez.server.controller.UserController
-import com.github.jambeez.server.domain.JamSession
+import com.github.jambeez.server.domain.Lobby
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.Intent
 import com.github.jambeez.server.domain.intent.IntentMessage
@@ -16,11 +16,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 interface JamSessionInformer {
-    fun informAllOtherUsers(jamSession: JamSession, user: User?, webSocketMessage: WebSocketMessage<*>)
+    fun informAllOtherUsers(jamSession: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>)
 }
 
 data class WebsocketConnectionData(
-    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer, val userController: UserController, val jamSessionController: JamSessionController, val user: User
+    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer, val userController: UserController, val jamSessionController: LobbyController, val user: User
 )
 
 class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
@@ -29,7 +29,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
 
     private val connections: MutableMap<String, WebsocketConnectionData> = ConcurrentHashMap<String, WebsocketConnectionData>()
 
-    private val jamSessionController = JamSessionController()
+    private val jamSessionController = LobbyController()
     private val userController = UserController()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -73,7 +73,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
         executors.submit(JamWorker(connectionData, message, intent.intent))
     }
 
-    override fun informAllOtherUsers(jamSession: JamSession, user: User?, webSocketMessage: WebSocketMessage<*>) {
+    override fun informAllOtherUsers(jamSession: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>) {
         val connections = connections.values.filter { wssd -> wssd.user != user && jamSession.users.contains(wssd.user) }
         connections.forEach { wssd -> wssd.websocketSession.sendMessage(webSocketMessage) }
     }

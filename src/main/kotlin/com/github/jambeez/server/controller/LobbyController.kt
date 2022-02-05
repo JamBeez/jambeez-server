@@ -1,23 +1,23 @@
 package com.github.jambeez.server.controller
 
-import com.github.jambeez.server.domain.JamSession
+import com.github.jambeez.server.domain.Lobby
 import com.github.jambeez.server.domain.User
 import java.util.*
 
-class JamSessionController {
+class LobbyController {
 
     // TODO REMOVE DEBUG LOBBY
-    private val jamSessions: MutableList<JamSession> = mutableListOf(JamSession("DEBUG"))
+    private val jamSessions: MutableList<Lobby> = mutableListOf(Lobby("DEBUG"))
 
-    fun newSession(user: User): JamSession {
-        val newSession = JamSession(UUID.randomUUID().toString())
+    fun createLobby(user: User): Lobby {
+        val newSession = Lobby(UUID.randomUUID().toString())
         newSession.users.add(user)
         jamSessions.add(newSession)
         return newSession
     }
 
 
-    fun joinSession(sessionId: String, user: User): JamSession {
+    fun joinLobby(sessionId: String, user: User): Lobby {
         if (findJamSession(user) != null) {
             throw IllegalArgumentException("User already in JamSession")
         }
