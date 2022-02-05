@@ -23,8 +23,9 @@ class LobbyHandler : Handler() {
 
 
     private fun joinLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        val joinRequest: JoinRequest = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("JoinRequest object could not be deserialized")
+        val joinRequest: JoinRequest = objectMapper.readValueOrNull(message.payload)
+            ?: throw WorkerException("JoinRequest object could not be deserialized")
         val session = connectionData.jamSessionController.joinSession(joinRequest.sessionId, connectionData.user)
-        IntentWrapper(intent, session).send(connectionData)
+        connectionData.jamSessionInformer.informAllMembers(session, IntentWrapper(intent, session).payload())
     }
 }
