@@ -9,7 +9,8 @@ class JamSessionController {
     private val jamSessions: MutableList<JamSession> = mutableListOf()
 
     fun newSession(user: User): JamSession {
-        val newSession = JamSession(UUID.randomUUID().toString(), user)
+        val newSession = JamSession(UUID.randomUUID().toString())
+        newSession.users.add(user)
         jamSessions.add(newSession)
         return newSession
     }
@@ -21,9 +22,9 @@ class JamSessionController {
         }
 
         val jamSession = jamSessions.find { s -> s.id == sessionId } ?: throw IllegalArgumentException("Your jam session does not exist :(")
-        jamSession.members.add(user)
+        jamSession.users.add(user)
         return jamSession
     }
 
-    fun findJamSession(user: User) = jamSessions.find { js -> js.members.contains(user) || js.owner == user }
+    fun findJamSession(user: User) = jamSessions.find { js -> js.users.contains(user) }
 }

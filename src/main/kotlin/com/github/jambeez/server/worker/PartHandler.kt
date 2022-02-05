@@ -21,7 +21,7 @@ class PartHandler : Handler() {
         }
 
         jamSession.parts[changeRequest.partId].beatsPerMinute = changeRequest.bpm
-        connectionData.jamSessionInformer.informAllMembers(jamSession, message)
+        connectionData.jamSessionInformer.informAllOtherUsers(jamSession, null, message)
     }
 
 }

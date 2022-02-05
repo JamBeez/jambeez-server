@@ -14,12 +14,11 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
 
 interface JamSessionInformer {
-    fun informAllMembers(jamSession: JamSession, webSocketMessage: WebSocketMessage<*>)
+    fun informAllOtherUsers(jamSession: JamSession, user: User?, webSocketMessage: WebSocketMessage<*>)
 }
 
 data class WebsocketConnectionData(
-    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer,
-    val userController: UserController, val jamSessionController: JamSessionController, val user: User
+    val websocketSession: WebSocketSession, val jamSessionInformer: JamSessionInformer, val userController: UserController, val jamSessionController: JamSessionController, val user: User
 )
 
 class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
@@ -61,8 +60,8 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
         executors.submit(JamWorker(connectionData, message, intent.intent))
     }
 
-    override fun informAllMembers(jamSession: JamSession, webSocketMessage: WebSocketMessage<*>) {
-        val connections = connections.values.filter { wssd -> jamSession.owner == wssd.user || jamSession.members.contains(wssd.user) }
+    override fun informAllOtherUsers(jamSession: JamSession, user: User?, webSocketMessage: WebSocketMessage<*>) {
+        val connections = connections.values.filter { wssd -> wssd.user != user && jamSession.users.contains(wssd.user) }
         connections.forEach { wssd -> wssd.websocketSession.sendMessage(webSocketMessage) }
     }
 }

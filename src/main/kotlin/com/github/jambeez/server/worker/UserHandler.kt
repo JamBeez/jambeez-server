@@ -9,7 +9,7 @@ import org.springframework.web.socket.TextMessage
 class UserHandler : Handler() {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
-            "user:alias" -> createUser(connectionData, message, intent)
+            "user:change_alias" -> createUser(connectionData, message, intent)
             else -> unknown(UserHandler::class.java, connectionData, intent)
         }
     }
@@ -24,6 +24,6 @@ class UserHandler : Handler() {
         result.send(connectionData)
 
         val jamSession = connectionData.jamSessionController.findJamSession(connectionData.user) ?: return
-        connectionData.jamSessionInformer.informAllMembers(jamSession, result.payload())
+        connectionData.jamSessionInformer.informAllOtherUsers(jamSession, connectionData.user, result.payload())
     }
 }
