@@ -9,7 +9,7 @@ import org.springframework.web.socket.TextMessage
 class UserHandler : Handler() {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
-            "user:change_alias" -> createUser(connectionData, message, intent)
+            USER_CHANGE_ALIAS -> createUser(connectionData, message, intent)
             else -> unknown(UserHandler::class.java, connectionData, intent)
         }
     }

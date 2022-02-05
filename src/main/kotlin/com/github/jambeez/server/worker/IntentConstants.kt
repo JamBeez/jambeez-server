@@ -7,6 +7,7 @@ const val LOBBY_JOIN = "lobby:join"
 
 // User Related
 const val USER = "user"
+const val USER_CHANGE_ALIAS = "user:change_alias"
 const val USER_JOINED = "user:joined"
 
 // Part Related
