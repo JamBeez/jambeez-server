@@ -14,7 +14,8 @@ data class PartChange(
     val bpm: Int? = null,
     val bars: Int? = null,
     @JsonProperty("sig_lower") val sigLower: Int? = null,
-    @JsonProperty("sig_upper") val sigUpper: Int? = null
+    @JsonProperty("sig_upper") val sigUpper: Int? = null,
+    val trackToRemove: String? = null
 )
 
 class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
@@ -27,8 +28,18 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
             PART_CHANGE_BARS -> changeBars(connectionData, message, intent)
             PART_CHANGE_SIG_LOWER -> changeSigLower(connectionData, message, intent)
             PART_CHANGE_SIG_UPPER -> changeSigUpper(connectionData, message, intent)
+            PART_REMOVE_TRACK -> removeTrack(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
+    }
+
+    private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.trackToRemove },
+            dataSetter = { p, c -> p.tracks.removeIf { it.id == c.trackToRemove!! } },
+            dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {

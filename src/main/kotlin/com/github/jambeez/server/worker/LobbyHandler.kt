@@ -10,6 +10,7 @@ import org.springframework.web.socket.TextMessage
 
 data class JoinRequest(val sessionId: String)
 data class Parts(val parts: MutableList<Part>)
+data class PartId(val partId: String)
 
 class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
     Handler(domainController, lobbyInformer) {
@@ -18,6 +19,7 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
             LOBBY_CREATE -> createLobby(connectionData, message, intent)
             LOBBY_JOIN -> joinLobby(connectionData, message, intent)
             LOBBY_UPDATE_PARTS -> updateParts(connectionData, message, intent)
+            LOBBY_REMOVE_PART -> removePart(connectionData, message, intent)
             else -> unknown(LobbyHandler::class.java, connectionData, intent)
         }
     }
@@ -53,5 +55,15 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         lobby.parts.addAll(parts.parts)
         // Inform other about part update
         lobbyInformer.informAllOtherUsers(lobby, connectionData.user, message)
+    }
+
+    private fun removePart(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        val lobby = findLobby(connectionData)
+        val partId: PartId =
+            objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("PartID could not be deserialized")
+        val part = lobby.parts.find { p -> p.id == partId.partId } ?: throw WorkerException("Part could not be found")
+        lobby.parts.remove(part)
+
+        lobbyInformer.informAllOtherUsers(lobby, null, message)
     }
 }
