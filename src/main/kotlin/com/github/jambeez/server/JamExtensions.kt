@@ -42,3 +42,9 @@ inline fun <reified T> ObjectMapper.readValueOrNull(data: String): T? {
         return null
     }
 }
+
+
+fun <E> MutableList<E>.setAll(newElems: MutableList<E>) {
+    this.clear()
+    this.addAll(newElems)
+}

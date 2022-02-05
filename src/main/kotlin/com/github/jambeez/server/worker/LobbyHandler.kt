@@ -32,13 +32,13 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
     private fun joinLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val joinRequest: JoinRequest = objectMapper.readValueOrNull(message.payload)
             ?: throw WorkerException("JoinRequest object could not be deserialized")
-        val session = domainController.joinLobby(joinRequest.sessionId, connectionData.user)
+        val lobby = domainController.joinLobby(joinRequest.sessionId, connectionData.user)
 
         // Send lobby to me
-        IntentWrapper(intent, session).send(connectionData)
+        IntentWrapper(intent, lobby).send(connectionData)
         // Send to others
         lobbyInformer.informAllOtherUsers(
-            session,
+            lobby,
             connectionData.user,
             IntentWrapper(USER_JOINED, connectionData.user).payload()
         )
@@ -46,8 +46,7 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
 
 
     private fun updateParts(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        val lobby =
-            domainController.findLobby(connectionData.user) ?: throw WorkerException("User not in Lobby")
+        val lobby = findLobby(connectionData)
         val parts: Parts =
             objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("Parts could not be deserialized")
         lobby.parts.clear()

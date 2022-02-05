@@ -14,3 +14,12 @@ const val USER_JOINED = "user:joined"
 // Part Related
 const val PART = "part"
 const val PART_CHANGE_BPM = "part:change_bpm"
+const val PART_CHANGE_BARS = "part:change_bars"
+const val PART_CHANGE_SIG_LOWER = "part:change_sig_lower"
+const val PART_CHANGE_SIG_UPPER = "part:change_sig_upper"
+
+// Track Related
+const val TRACK = "track"
+const val TRACK_TOGGLE_MUTE = "track:toggle_mute"
+const val TRACK_SET_SAMPLE = "track:set_sample"
+const val TRACK_SET_BEATS = "track:set_beats"

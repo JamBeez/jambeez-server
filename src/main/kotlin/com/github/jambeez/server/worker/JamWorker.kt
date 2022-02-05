@@ -20,6 +20,7 @@ class JamWorker(
                 LOBBY -> LobbyHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 USER -> UserHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 PART -> PartHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
+                TRACK -> TrackHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 else -> unknown(null, connectionData, intent)
             }
         } catch (e: Exception) {

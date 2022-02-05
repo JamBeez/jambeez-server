@@ -1,33 +1,75 @@
 package com.github.jambeez.server.worker
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.jambeez.server.LobbyInformer
 import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
-import com.github.jambeez.server.readValueOrNull
+import com.github.jambeez.server.domain.Lobby
+import com.github.jambeez.server.domain.Part
 import org.springframework.web.socket.TextMessage
+
+
+data class PartChange(
+    val partId: String,
+    val bpm: Int? = null,
+    val bars: Int? = null,
+    @JsonProperty("sig_lower") val sigLower: Int? = null,
+    @JsonProperty("sig_upper") val sigUpper: Int? = null
+)
 
 class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
     Handler(domainController, lobbyInformer) {
+
+
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
             PART_CHANGE_BPM -> changeBPM(connectionData, message, intent)
+            PART_CHANGE_BARS -> changeBars(connectionData, message, intent)
+            PART_CHANGE_SIG_LOWER -> changeSigLower(connectionData, message, intent)
+            PART_CHANGE_SIG_UPPER -> changeSigUpper(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        val lobby = domainController.findLobby(connectionData.user) ?: throw WorkerException("User not in Lobby")
-        val changeRequest: ChangeRequest = objectMapper.readValueOrNull(message.payload)
-            ?: throw WorkerException("ChangeRequest could not be deserialized")
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.bpm },
+            dataSetter = { p, c -> p.bpm = c.bpm!! },
+            dataGetter = { l, c -> findPart(l, c) })
+    }
 
-        if (lobby.parts.size <= changeRequest.partId) {
-            throw WorkerException("Invalid PartId")
-        }
+    private fun changeBars(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.bars },
+            dataSetter = { p, c -> p.bars = c.bars!! },
+            dataGetter = { l, c -> findPart(l, c) })
+    }
 
-        lobby.parts[changeRequest.partId].beatsPerMinute = changeRequest.bpm
-        lobbyInformer.informAllOtherUsers(lobby, null, message)
+    private fun changeSigUpper(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.sigUpper },
+            dataSetter = { p, c -> p.sigUpper = c.sigUpper!! },
+            dataGetter = { l, c -> findPart(l, c) })
+    }
+
+    private fun changeSigLower(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.sigLower },
+            dataSetter = { p, c -> p.sigLower = c.sigLower!! },
+            dataGetter = { l, c -> findPart(l, c) })
+    }
+
+
+    private fun findPart(lobby: Lobby, partChange: PartChange): Part {
+        return lobby.parts.find { p -> p.id == partChange.partId } ?: throw WorkerException("Invalid PartId")
     }
 
 }
-
-data class ChangeRequest(val partId: Int, val bpm: Int)
