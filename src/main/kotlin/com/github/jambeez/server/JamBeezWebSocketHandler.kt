@@ -1,8 +1,7 @@
 package com.github.jambeez.server
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.github.jambeez.server.controller.LobbyController
-import com.github.jambeez.server.controller.UserController
+import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Lobby
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.Intent
@@ -20,22 +19,23 @@ interface LobbyInformer {
 }
 
 data class WebsocketConnectionData(
-    val websocketSession: WebSocketSession, val lobbyInformer: LobbyInformer, val userController: UserController, val lobbyController: LobbyController, val user: User
+    val websocketSession: WebSocketSession, val user: User
 )
 
 class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
     private val objectMapper: ObjectMapper = createObjectMapper()
     private val executors = Executors.newCachedThreadPool()
 
-    private val connections: MutableMap<String, WebsocketConnectionData> = ConcurrentHashMap<String, WebsocketConnectionData>()
+    private val connections: MutableMap<String, WebsocketConnectionData> =
+        ConcurrentHashMap<String, WebsocketConnectionData>()
 
-    private val lobbyController = LobbyController()
-    private val userController = UserController()
+    private val domainController = DomainController()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.debug("Connection Established to $session")
         connections[session.id] = WebsocketConnectionData(
-            ConcurrentWebSocketSessionDecorator(session, 2000, 4096), this, userController, lobbyController, userController.createUser()
+            ConcurrentWebSocketSessionDecorator(session, 2000, 4096),
+            domainController.createUser()
         )
         super.afterConnectionEstablished(session)
     }
@@ -70,7 +70,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
             logger.debug("Unknown session found $session")
             return
         }
-        executors.submit(JamWorker(connectionData, message, intent.intent))
+        executors.submit(JamWorker(domainController, this, connectionData, message, intent.intent))
     }
 
     override fun informAllOtherUsers(lobby: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>) {

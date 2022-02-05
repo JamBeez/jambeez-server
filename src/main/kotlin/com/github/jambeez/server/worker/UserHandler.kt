@@ -1,20 +1,23 @@
 package com.github.jambeez.server.worker
 
+import com.github.jambeez.server.LobbyInformer
 import com.github.jambeez.server.WebsocketConnectionData
+import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.IntentWrapper
 import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
-class UserHandler : Handler() {
+class UserHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
+    Handler(domainController, lobbyInformer) {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
-            USER_CHANGE_ALIAS -> createUser(connectionData, message, intent)
+            USER_CHANGE_ALIAS -> changeAlias(connectionData, message, intent)
             else -> unknown(UserHandler::class.java, connectionData, intent)
         }
     }
 
-    private fun createUser(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+    private fun changeAlias(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val user: User = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("No User Provided")
         if (user.id != connectionData.user.id) {
             throw WorkerException("User Id can't be changed")
@@ -23,7 +26,7 @@ class UserHandler : Handler() {
         val result = IntentWrapper(intent, connectionData.user)
         result.send(connectionData)
 
-        val lobby = connectionData.lobbyController.findLobby(connectionData.user) ?: return
-        connectionData.lobbyInformer.informAllOtherUsers(lobby, connectionData.user, result.payload())
+        val lobby = domainController.findLobby(connectionData.user) ?: return
+        lobbyInformer.informAllOtherUsers(lobby, null, result.payload())
     }
 }
