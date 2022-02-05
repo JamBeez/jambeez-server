@@ -31,6 +31,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
     private val userController = UserController()
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
+        logger.debug("Connection Established to $session")
         connections[session.id] = WebsocketConnectionData(
             ConcurrentWebSocketSessionDecorator(session, 2000, 4096), this, userController, jamSessionController, userController.createUser()
         )
@@ -39,6 +40,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), JamSessionInformer {
 
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
+        logger.debug("Connection closed to $session")
         connections.remove(session.id)
         super.afterConnectionClosed(session, status)
     }
