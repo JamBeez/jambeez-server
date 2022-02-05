@@ -6,8 +6,6 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.context.annotation.ApplicationScope
 import java.util.*
 
-@Controller
-@ApplicationScope
 class UserController {
 
     private val users : MutableList<User> = mutableListOf()
