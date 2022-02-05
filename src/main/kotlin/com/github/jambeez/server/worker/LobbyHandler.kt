@@ -7,6 +7,7 @@ import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
 data class JoinRequest(val sessionId: String)
+data class Parts(val parts: MutableList<Part>)
 
 class LobbyHandler : Handler() {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
@@ -38,9 +39,9 @@ class LobbyHandler : Handler() {
 
     private fun updateParts(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val lobby = connectionData.lobbyController.findLobby(connectionData.user) ?: throw WorkerException("User not in Lobby")
-        val parts: MutableList<Part> = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("Parts could not be deserialized")
+        val parts: Parts = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("Parts could not be deserialized")
         lobby.parts.clear()
-        lobby.parts.addAll(parts)
+        lobby.parts.addAll(parts.parts)
         // Inform other about part update
         connectionData.lobbyInformer.informAllOtherUsers(lobby, connectionData.user, message)
     }
