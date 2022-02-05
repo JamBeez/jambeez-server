@@ -1,6 +1,9 @@
 package com.github.jambeez.server
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import org.slf4j.Logger
@@ -23,6 +26,15 @@ fun createObjectMapper(): ObjectMapper {
 }
 
 inline fun <reified T> ObjectMapper.readValueOrNull(data: ByteArray): T? {
+    try {
+        return this.readValue(data)
+    } catch (e: Exception) {
+        logger.error(e.message, e)
+        return null
+    }
+}
+
+inline fun <reified T> ObjectMapper.readValueOrNull(data: String): T? {
     try {
         return this.readValue(data)
     } catch (e: Exception) {
