@@ -6,7 +6,8 @@ import java.util.*
 
 class JamSessionController {
 
-    private val jamSessions: MutableList<JamSession> = mutableListOf()
+    // TODO REMOVE DEBUG LOBBY
+    private val jamSessions: MutableList<JamSession> = mutableListOf(JamSession("DEBUG"))
 
     fun newSession(user: User): JamSession {
         val newSession = JamSession(UUID.randomUUID().toString())
