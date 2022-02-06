@@ -1,6 +1,7 @@
 # jambeez-server
 
 ## Apache Config
+
 ```
 <VirtualHost *:443>
         ServerName FQDN
@@ -45,7 +46,7 @@ Define your endpoint with: `ws://localhost:8080/jambeez`
 | lobby:remove_part     | Removes a part from a lobby                   | [PartID](src/main/kotlin/com/github/jambeez/server/worker/LobbyHandler.kt)      | Deletes the part from in all sessions. To others: [PartId](src/main/kotlin/com/github/jambeez/server/worker/LobbyHandler.kt)                                                                         |
 | part:change_bpm       | Sets the bpm of a part                        | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Overwrites the bpm of the part and sends the update to all: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                            |
 | part:change_bars      | Sets the bars of a part                       | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Overwrites the bars of a part and sends the update to all: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                             |
-| part:add_track        | Adds a track to a part                        | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Adds the track to the part: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                                                            |
+| part:add_track        | Adds a track to a part                        | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Adds the track to the part: [NewTrackResponse](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                                                      |
 | part:remove_track     | Removes a track from a part                   | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Removes the track from the part in all sessions to all: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                                |
 | part:change_sig_lower | Sets the sig_lower of a part                  | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Overwrites the sig_lower of the part and sends the update to all: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                      |
 | part:change_sig_upper | Sets the sig_upper of a part                  | [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)   | Overwrites the sig_upper of the part and sends the update to all: [PartChange](src/main/kotlin/com/github/jambeez/server/worker/PartHandler.kt)                                                      |

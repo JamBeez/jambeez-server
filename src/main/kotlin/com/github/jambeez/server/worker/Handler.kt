@@ -21,14 +21,14 @@ abstract class Handler(protected val domainController: DomainController, protect
     protected inline fun <reified D, reified R> changeAttribute(
         connectionData: WebsocketConnectionData,
         message: TextMessage,
-        selector: (R) -> Any?,
+        validator: (R) -> Boolean,
         dataSetter: (D, R) -> Unit,
         dataGetter: (Lobby, R) -> D,
         messageToSend: (TextMessage, R) -> WebSocketMessage<*> = { m, _ -> m }
     ) {
         logger.debug("Try ChangeAttribute Payload [${message.payload}] from ${connectionData.user}")
         val lobby = findLobby(connectionData)
-        val changeRequest = readChangeRequest(message, selector)
+        val changeRequest = readChangeRequest(message, validator)
         val data = dataGetter(lobby, changeRequest)
         dataSetter(data, changeRequest)
         logger.debug("Success ChangeAttribute [$changeRequest] from ${connectionData.user}")
@@ -37,12 +37,13 @@ abstract class Handler(protected val domainController: DomainController, protect
     }
 
 
-    protected inline fun <reified R> readChangeRequest(message: TextMessage, selector: (R) -> Any?): R {
+    protected inline fun <reified R> readChangeRequest(message: TextMessage, validator: (R) -> Boolean): R {
         val changeRequest: R = objectMapper.readValueOrNull(message.payload)
             ?: throw WorkerException("ChangeRequest could not be deserialized")
 
-        if (selector(changeRequest) == null) throw WorkerException("ChangeRequest incomplete")
+        if (!validator(changeRequest)) throw WorkerException("ChangeRequest incomplete or invalid")
         return changeRequest
     }
+
 
 }

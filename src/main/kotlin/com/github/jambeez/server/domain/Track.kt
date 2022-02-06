@@ -10,4 +10,8 @@ data class Track(
     val beats: MutableList<Boolean> = mutableListOf(),
     @JsonProperty("color_per_beat") val colorPerBeat: MutableList<List<Float>> = mutableListOf(),
     var volume: Int = 50
-)
+) {
+    fun validate(): Boolean {
+        return sample.isNotBlank() && (volume >= 0) && (volume <= 100)
+    }
+}
