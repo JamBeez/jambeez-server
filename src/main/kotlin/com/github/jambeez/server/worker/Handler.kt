@@ -24,12 +24,12 @@ abstract class Handler(protected val domainController: DomainController, protect
         dataSetter: (D, R) -> Unit,
         dataGetter: (Lobby, R) -> D
     ) {
-        logger.debug("Try ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
+        logger.debug("Try ChangeAttribute Payload [${message.payload}] from ${connectionData.user}")
         val lobby = findLobby(connectionData)
         val changeRequest = readChangeRequest(message, selector)
         val data = dataGetter(lobby, changeRequest)
         dataSetter(data, changeRequest)
-        logger.debug("Success ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
+        logger.debug("Success ChangeAttribute [$changeRequest] from ${connectionData.user}")
         lobbyInformer.informAllOtherUsers(lobby, null, message)
     }
 
