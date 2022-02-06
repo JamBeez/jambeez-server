@@ -5,11 +5,11 @@ import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.IntentWrapper
+import com.github.jambeez.server.logger
 import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
-class UserHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
-    Handler(domainController, lobbyInformer) {
+class UserHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
             USER_CHANGE_ALIAS -> changeAlias(connectionData, message, intent)
@@ -28,5 +28,6 @@ class UserHandler(domainController: DomainController, lobbyInformer: LobbyInform
 
         val lobby = domainController.findLobby(connectionData.user) ?: return
         lobbyInformer.informAllOtherUsers(lobby, null, result.payload())
+        logger.debug("Changed Alias of User: $user")
     }
 }

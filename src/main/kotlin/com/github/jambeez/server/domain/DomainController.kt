@@ -1,6 +1,7 @@
 package com.github.jambeez.server.domain
 
 import com.github.jambeez.server.WebsocketConnectionData
+import com.github.jambeez.server.logger
 import java.util.*
 
 class DomainController {
@@ -18,10 +19,11 @@ class DomainController {
 
     @Synchronized
     fun createLobby(user: User): Lobby {
-        val newSession = Lobby(UUID.randomUUID().toString())
-        newSession.users.add(user)
-        lobbies.add(newSession)
-        return newSession
+        val newLobby = Lobby(UUID.randomUUID().toString())
+        newLobby.users.add(user)
+        logger.debug("Create new Lobby $newLobby")
+        lobbies.add(newLobby)
+        return newLobby
     }
 
     @Synchronized
@@ -30,10 +32,11 @@ class DomainController {
             throw IllegalArgumentException("User already in Lobby")
         }
 
-        val lobbys = lobbies.find { s -> s.id == sessionId }
+        val lobby = lobbies.find { s -> s.id == sessionId }
             ?: throw IllegalArgumentException("Your jam session does not exist :(")
-        lobbys.users.add(user)
-        return lobbys
+        lobby.users.add(user)
+        logger.debug("User $user successfully joined Lobby: $lobby")
+        return lobby
     }
 
     fun findLobby(user: User) = lobbies.find { js -> js.users.contains(user) }
@@ -44,6 +47,7 @@ class DomainController {
         val lobby = findLobby(websocketConnectionData.user) ?: return
         lobby.users.remove(websocketConnectionData.user)
         if (lobby.users.isEmpty()) {
+            logger.debug("Remove Lobby $lobby")
             lobbies.remove(lobby)
         }
 

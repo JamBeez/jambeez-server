@@ -1,11 +1,8 @@
 package com.github.jambeez.server.worker
 
-import com.github.jambeez.server.LobbyInformer
-import com.github.jambeez.server.WebsocketConnectionData
-import com.github.jambeez.server.createObjectMapper
+import com.github.jambeez.server.*
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Lobby
-import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
 abstract class Handler(protected val domainController: DomainController, protected val lobbyInformer: LobbyInformer) {
@@ -20,17 +17,19 @@ abstract class Handler(protected val domainController: DomainController, protect
     }
 
 
-    protected inline fun <D, reified R> changeAttribute(
+    protected inline fun <reified D, reified R> changeAttribute(
         connectionData: WebsocketConnectionData,
         message: TextMessage,
         selector: (R) -> Any?,
         dataSetter: (D, R) -> Unit,
         dataGetter: (Lobby, R) -> D
     ) {
+        logger.debug("Try ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
         val lobby = findLobby(connectionData)
         val changeRequest = readChangeRequest(message, selector)
         val data = dataGetter(lobby, changeRequest)
         dataSetter(data, changeRequest)
+        logger.debug("Success ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
         lobbyInformer.informAllOtherUsers(lobby, null, message)
     }
 

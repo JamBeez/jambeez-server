@@ -4,6 +4,7 @@ import com.github.jambeez.server.LobbyInformer
 import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.intent.IntentMessage
+import com.github.jambeez.server.logger
 import org.springframework.web.socket.TextMessage
 
 class JamWorker(
@@ -30,6 +31,7 @@ class JamWorker(
 }
 
 fun unknown(clazz: Class<*>?, connectionData: WebsocketConnectionData, intent: String) {
+    logger.error("Got unknown intent: $intent")
     IntentMessage("error:$intent", "Unknown intent $intent. Selected Handler: ${clazz ?: "UNKNOWN"}").send(
         connectionData
     )

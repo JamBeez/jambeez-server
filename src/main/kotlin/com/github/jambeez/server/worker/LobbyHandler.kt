@@ -6,6 +6,7 @@ import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Part
 import com.github.jambeez.server.domain.intent.IntentWrapper
+import com.github.jambeez.server.logger
 import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
@@ -29,6 +30,7 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
 
     private fun createLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val session = domainController.createLobby(connectionData.user)
+        logger.debug("Created Lobby: $session")
         IntentWrapper(intent, session).send(connectionData)
     }
 
