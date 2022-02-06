@@ -6,18 +6,23 @@ import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Lobby
 import com.github.jambeez.server.domain.Part
+import com.github.jambeez.server.domain.Track
+import com.github.jambeez.server.domain.intent.IntentWrapper
 import org.springframework.web.socket.TextMessage
 
 
 data class PartChange(
-    @JsonProperty("part_id")
-    val partId: String,
+    @JsonProperty("part_id") val partId: String,
     val bpm: Int? = null,
     val bars: Int? = null,
     @JsonProperty("sig_lower") val sigLower: Int? = null,
     @JsonProperty("sig_upper") val sigUpper: Int? = null,
-    @JsonProperty("track_id")
-    val trackToRemove: String? = null
+    @JsonProperty("track_to_remove") val trackToRemove: String? = null,
+    @JsonProperty("track_to_add") val trackToAdd: Track? = null
+)
+
+data class NewTrackResponse(
+    @JsonProperty("part_id") val partId: String, @JsonProperty("track_to_add") val trackToAdd: Track
 )
 
 class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
@@ -31,13 +36,22 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
             PART_CHANGE_SIG_LOWER -> changeSigLower(connectionData, message, intent)
             PART_CHANGE_SIG_UPPER -> changeSigUpper(connectionData, message, intent)
             PART_REMOVE_TRACK -> removeTrack(connectionData, message, intent)
+            PART_ADD_TRACK -> addTrack(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
     }
 
+    private fun addTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(connectionData,
+            message,
+            selector = { it.trackToAdd },
+            dataSetter = { p, c -> p.tracks.add(c.trackToAdd!!) },
+            dataGetter = { l, c -> findPart(l, c) },
+            messageToSend = { _, c -> IntentWrapper(intent, NewTrackResponse(c.partId, c.trackToAdd!!)).payload() })
+    }
+
     private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(
-            connectionData,
+        changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.trackToRemove },
             dataSetter = { p, c -> p.tracks.removeIf { it.id == c.trackToRemove!! } },
@@ -45,8 +59,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(
-            connectionData,
+        changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.bpm },
             dataSetter = { p, c -> p.bpm = c.bpm!! },
@@ -54,8 +67,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeBars(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(
-            connectionData,
+        changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.bars },
             dataSetter = { p, c -> p.bars = c.bars!! },
@@ -63,8 +75,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeSigUpper(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(
-            connectionData,
+        changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.sigUpper },
             dataSetter = { p, c -> p.sigUpper = c.sigUpper!! },
@@ -72,8 +83,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeSigLower(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(
-            connectionData,
+        changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.sigLower },
             dataSetter = { p, c -> p.sigLower = c.sigLower!! },
