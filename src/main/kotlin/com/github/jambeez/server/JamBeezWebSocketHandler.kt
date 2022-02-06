@@ -37,6 +37,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
             ConcurrentWebSocketSessionDecorator(session, 2000, 4096),
             domainController.createUser()
         )
+        logger.info("New connected client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
         super.afterConnectionEstablished(session)
     }
 
@@ -45,6 +46,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
         logger.debug("Connection closed to $session")
         domainController.end(connections[session.id])
         connections.remove(session.id)
+        logger.info("Lost a client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
         super.afterConnectionClosed(session, status)
     }
 

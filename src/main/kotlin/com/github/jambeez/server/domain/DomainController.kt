@@ -33,6 +33,8 @@ class DomainController {
         lobbyIdParts = musicalWords.toList()
     }
 
+    fun amountOfLobbies() = lobbies.size
+
     fun createUser(): User {
         val newUser = User(UUID.randomUUID().toString())
         users.add(newUser)
