@@ -1,5 +1,6 @@
 package com.github.jambeez.server.domain
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.*
 
 data class Track(
@@ -7,6 +8,6 @@ data class Track(
     var muted: Boolean = false,
     var sample: String,
     val beats: MutableList<Boolean> = mutableListOf(),
-    val colorPerBeat: MutableList<List<Float>> = mutableListOf(),
+    @JsonProperty("color_per_beat") val colorPerBeat: MutableList<List<Float>> = mutableListOf(),
     var volume: Int = 50
 )
