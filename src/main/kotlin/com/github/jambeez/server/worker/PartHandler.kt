@@ -35,6 +35,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
             PART_CHANGE_SIG_LOWER -> changeSigLower(connectionData, message, intent)
             PART_CHANGE_SIG_UPPER -> changeSigUpper(connectionData, message, intent)
             PART_REMOVE_TRACK -> removeTrack(connectionData, message, intent)
+            PART_ADD_TRACK -> addTrack(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
     }

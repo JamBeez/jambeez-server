@@ -23,10 +23,18 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
             LOBBY_JOIN -> joinLobby(connectionData, message, intent)
             LOBBY_UPDATE_PARTS -> updateParts(connectionData, message, intent)
             LOBBY_REMOVE_PART -> removePart(connectionData, message, intent)
+            LOBBY_ADD_PART -> addPart(connectionData, message, intent)
             else -> unknown(LobbyHandler::class.java, connectionData, intent)
         }
     }
 
+    private fun addPart(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        val lobby = findLobby(connectionData)
+        val part = Part()
+        lobby.parts.add(part)
+
+        lobbyInformer.informAllOtherUsers(lobby, null, IntentWrapper(intent, part).payload())
+    }
 
     private fun createLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val session = domainController.createLobby(connectionData.user)
