@@ -1,5 +1,21 @@
 # jambeez-server
 
+## Apache Config
+```
+<VirtualHost *:443>
+        ServerName FQDN
+
+        ProxyPreserveHost On
+        ProxyRequests Off
+        RewriteEngine On
+        RewriteCond %{HTTP:Upgrade} =websocket [NC]
+        RewriteRule ^/jambeez/(.*)    wss://localhost:8080/jambeez/$1 [P,L]
+        ProxyPass "/jambeez" "ws://127.0.0.1:8080/jambeez"
+        ProxyPass "/" "http://127.0.0.1:8080/"
+</VirtualHost>
+
+```
+
 ## How to start
 
 Start your own server with:
