@@ -43,6 +43,7 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
         logger.debug("Connection closed to $session")
+        domainController.end(connections[session.id])
         connections.remove(session.id)
         super.afterConnectionClosed(session, status)
     }
