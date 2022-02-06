@@ -25,8 +25,7 @@ data class NewTrackResponse(
     @JsonProperty("part_id") val partId: String, @JsonProperty("track_to_add") val trackToAdd: Track
 )
 
-class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
-    Handler(domainController, lobbyInformer) {
+class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
 
 
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
@@ -45,9 +44,16 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
         changeAttribute<Part, PartChange>(connectionData,
             message,
             selector = { it.trackToAdd },
-            dataSetter = { p, c -> p.tracks.add(c.trackToAdd!!) },
+            dataSetter = { p, c -> setTrack(p, c) },
             dataGetter = { l, c -> findPart(l, c) },
             messageToSend = { _, c -> IntentWrapper(intent, NewTrackResponse(c.partId, c.trackToAdd!!)).payload() })
+    }
+
+    private fun setTrack(p: Part, c: PartChange) {
+        val track = c.trackToAdd!!
+        track.colorPerBeat.clear()
+        track.beats.forEach { _ -> track.colorPerBeat.add(listOf()) }
+        p.tracks.add(track)
     }
 
     private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
@@ -59,35 +65,19 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData,
-            message,
-            selector = { it.bpm },
-            dataSetter = { p, c -> p.bpm = c.bpm!! },
-            dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.bpm }, dataSetter = { p, c -> p.bpm = c.bpm!! }, dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeBars(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData,
-            message,
-            selector = { it.bars },
-            dataSetter = { p, c -> p.bars = c.bars!! },
-            dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.bars }, dataSetter = { p, c -> p.bars = c.bars!! }, dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeSigUpper(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData,
-            message,
-            selector = { it.sigUpper },
-            dataSetter = { p, c -> p.sigUpper = c.sigUpper!! },
-            dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.sigUpper }, dataSetter = { p, c -> p.sigUpper = c.sigUpper!! }, dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeSigLower(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData,
-            message,
-            selector = { it.sigLower },
-            dataSetter = { p, c -> p.sigLower = c.sigLower!! },
-            dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.sigLower }, dataSetter = { p, c -> p.sigLower = c.sigLower!! }, dataGetter = { l, c -> findPart(l, c) })
     }
 
 

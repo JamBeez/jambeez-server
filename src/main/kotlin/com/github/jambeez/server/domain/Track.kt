@@ -7,5 +7,6 @@ data class Track(
     var muted: Boolean = false,
     var sample: String,
     val beats: MutableList<Boolean> = mutableListOf(),
+    val colorPerBeat: MutableList<List<Float>> = mutableListOf(),
     var volume: Int = 50
 )

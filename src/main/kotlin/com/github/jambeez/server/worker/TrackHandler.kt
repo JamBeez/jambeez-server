@@ -10,10 +10,8 @@ import com.github.jambeez.server.setAll
 import org.springframework.web.socket.TextMessage
 
 data class TrackChange(
-    @JsonProperty("part_id")
-    val partId: String,
-    @JsonProperty("track_id")
-    val trackId: String,
+    @JsonProperty("part_id") val partId: String,
+    @JsonProperty("track_id") val trackId: String,
     val mute: Boolean? = null,
     val sample: String? = null,
     val beats: MutableList<Boolean>? = null,
@@ -21,8 +19,7 @@ data class TrackChange(
 )
 
 
-class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
-    Handler(domainController, lobbyInformer) {
+class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         when (intent) {
             TRACK_TOGGLE_MUTE -> toggleMute(connectionData, message, intent)
@@ -34,45 +31,46 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
     }
 
     private fun changeVolume(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Track, TrackChange>(
-            connectionData,
-            message,
-            selector = { it.volume },
-            dataSetter = { p, c -> p.volume = c.volume!! },
-            dataGetter = { l, c -> findTrack(l, c) })
+        changeAttribute<Track, TrackChange>(connectionData, message, selector = { it.volume }, dataSetter = { p, c -> p.volume = c.volume!! }, dataGetter = { l, c -> findTrack(l, c) })
     }
 
     private fun toggleMute(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Track, TrackChange>(
-            connectionData,
-            message,
-            selector = { it.mute },
-            dataSetter = { p, c -> p.muted = c.mute!! },
-            dataGetter = { l, c -> findTrack(l, c) })
+        changeAttribute<Track, TrackChange>(connectionData, message, selector = { it.mute }, dataSetter = { p, c -> p.muted = c.mute!! }, dataGetter = { l, c -> findTrack(l, c) })
     }
 
     private fun setSample(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Track, TrackChange>(
-            connectionData,
-            message,
-            selector = { it.sample },
-            dataSetter = { p, c -> p.sample = c.sample!! },
-            dataGetter = { l, c -> findTrack(l, c) })
+        changeAttribute<Track, TrackChange>(connectionData, message, selector = { it.sample }, dataSetter = { p, c -> p.sample = c.sample!! }, dataGetter = { l, c -> findTrack(l, c) })
     }
 
     private fun setBeats(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Track, TrackChange>(
-            connectionData,
+        changeAttribute<Track, TrackChange>(connectionData,
             message,
             selector = { it.beats },
-            dataSetter = { p, c -> p.beats.setAll(c.beats!!) },
+            dataSetter = { p, c -> processBeatsChange(connectionData, p, c) },
             dataGetter = { l, c -> findTrack(l, c) })
+    }
+
+    private fun processBeatsChange(connectionData: WebsocketConnectionData, p: Track, c: TrackChange) {
+        val copy = p.beats.toList()
+        val newBeats = c.beats!!
+
+        val colors: MutableList<List<Float>> = IntRange(0, newBeats.size - 1).map { idx ->
+            if (newBeats[idx] && !copy.getOrElse(idx) { false }) {
+                connectionData.user.color
+            } else if (copy.getOrElse(idx) { false }) {
+                p.colorPerBeat[idx]
+            } else {
+                listOf()
+            }
+        }.toMutableList()
+
+        p.beats.setAll(c.beats)
+        p.colorPerBeat.setAll(colors)
     }
 
 
     private fun findTrack(lobby: Lobby, trackChange: TrackChange): Track {
-        return lobby.parts.find { p -> p.id == trackChange.partId }?.tracks?.find { t -> t.id == trackChange.trackId }
-            ?: throw WorkerException("Track not found")
+        return lobby.parts.find { p -> p.id == trackChange.partId }?.tracks?.find { t -> t.id == trackChange.trackId } ?: throw WorkerException("Track not found")
     }
 
 }
