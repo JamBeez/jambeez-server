@@ -17,4 +17,6 @@ open class Intent(val intent: String) {
 
     fun send(connectionData: WebsocketConnectionData) = send(connectionData.websocketSession)
     fun send(webSocketSession: WebSocketSession) = webSocketSession.sendMessage(payload())
+
+    override fun toString(): String = "Intent: $intent"
 }
