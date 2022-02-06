@@ -1,2 +1,2 @@
 logging.level:
-  com.github.jambeez: DEBUG
+  com.github.jambeez: INFO
