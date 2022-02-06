@@ -2,6 +2,7 @@ package com.github.jambeez.server.domain
 
 import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.logger
+import org.springframework.core.io.ClassPathResource
 import java.util.*
 
 class DomainController {
@@ -17,6 +18,21 @@ class DomainController {
         )
     )
 
+    private val lobbyIdParts: List<String>
+
+    init {
+        val musicalWordsResource = ClassPathResource("/musical-words.txt")
+        val musicalWords = mutableListOf<String>()
+        Scanner(musicalWordsResource.inputStream).use { scanner ->
+            while (scanner.hasNextLine()) {
+                val word = scanner.nextLine()?.trim()
+                if (word == null || word.isBlank() || word.startsWith("#")) continue
+                musicalWords.add(word)
+            }
+        }
+        lobbyIdParts = musicalWords.toList()
+    }
+
     fun createUser(): User {
         val newUser = User(UUID.randomUUID().toString())
         users.add(newUser)
@@ -25,11 +41,17 @@ class DomainController {
 
     @Synchronized
     fun createLobby(user: User): Lobby {
-        val newLobby = Lobby(UUID.randomUUID().toString())
+        val newLobby = Lobby(newLobbyId())
         newLobby.users.add(user)
         logger.debug("Create new Lobby $newLobby")
         lobbies.add(newLobby)
         return newLobby
+    }
+
+    private fun newLobbyId(): String {
+        val key = "${lobbyIdParts.random()}-${lobbyIdParts.random()}-${lobbyIdParts.random()}"
+        if (lobbies.any { l -> l.id == key }) return UUID.randomUUID().toString()
+        return key
     }
 
     @Synchronized
