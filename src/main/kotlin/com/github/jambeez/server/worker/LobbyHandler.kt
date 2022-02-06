@@ -63,6 +63,7 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         val lobby = findLobby(connectionData)
         val parts: Parts =
             objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("Parts could not be deserialized")
+        if (!parts.parts.all { it.validate() }) throw WorkerException("Part validation failed")
         lobby.parts.clear()
         lobby.parts.addAll(parts.parts)
         // Inform other about part update

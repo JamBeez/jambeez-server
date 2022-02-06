@@ -19,7 +19,14 @@ data class TrackChange(
     val beats: MutableList<Boolean>? = null,
     @JsonProperty("color_per_beat") var colorPerBeat: MutableList<List<Float>>? = null,
     val volume: Int? = null
-)
+) {
+
+    fun validate(): Boolean {
+        if (sample != null) return sample.isNotBlank()
+        if (volume != null) return volume in 0..100
+        return true
+    }
+}
 
 
 class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
@@ -38,7 +45,7 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         changeAttribute<Track, TrackChange>(
             connectionData,
             message,
-            selector = { it.volume },
+            validator = { it.volume != null && it.validate() },
             dataSetter = { p, c -> p.volume = c.volume!! },
             dataGetter = { l, c -> findTrack(l, c) })
     }
@@ -47,7 +54,7 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         changeAttribute<Track, TrackChange>(
             connectionData,
             message,
-            selector = { it.mute },
+            validator = { it.mute != null && it.validate() },
             dataSetter = { p, c -> p.muted = c.mute!! },
             dataGetter = { l, c -> findTrack(l, c) })
     }
@@ -56,7 +63,7 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         changeAttribute<Track, TrackChange>(
             connectionData,
             message,
-            selector = { it.sample },
+            validator = { it.sample != null && it.validate() },
             dataSetter = { p, c -> p.sample = c.sample!! },
             dataGetter = { l, c -> findTrack(l, c) })
     }
@@ -64,7 +71,7 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
     private fun setBeats(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         changeAttribute<Track, TrackChange>(connectionData,
             message,
-            selector = { it.beats },
+            validator = { it.beats != null && it.validate() },
             dataSetter = { p, c -> processBeatsChange(connectionData, p, c) },
             dataGetter = { l, c -> findTrack(l, c) },
             messageToSend = { _, c -> beatWithColorData(connectionData, c, intent) }

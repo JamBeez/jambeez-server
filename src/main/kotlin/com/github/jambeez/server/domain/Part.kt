@@ -12,4 +12,9 @@ data class Part(
     @JsonProperty("sig_upper")
     var sigUpper: Int = 4,
     val tracks: MutableList<Track> = mutableListOf()
-)
+) {
+    fun validate(): Boolean {
+        return bars > 0 && bpm > 0 && sigLower > 0 && sigUpper > 0 && tracks.all { it.validate() }
+    }
+
+}

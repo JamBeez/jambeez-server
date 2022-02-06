@@ -19,13 +19,23 @@ data class PartChange(
     @JsonProperty("sig_upper") val sigUpper: Int? = null,
     @JsonProperty("track_to_remove") val trackToRemove: String? = null,
     @JsonProperty("track_to_add") val trackToAdd: Track? = null
-)
+) {
+    fun validate(): Boolean {
+        if (bpm != null) return bpm > 0
+        if (bars != null) return bars > 0
+        if (sigLower != null) return sigLower > 0
+        if (sigUpper != null) return sigUpper > 0
+        if (trackToAdd != null) return trackToAdd.validate()
+        return true
+    }
+}
 
 data class NewTrackResponse(
     @JsonProperty("part_id") val partId: String, @JsonProperty("track_to_add") val trackToAdd: Track
 )
 
-class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
+class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
+    Handler(domainController, lobbyInformer) {
 
 
     override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
@@ -43,7 +53,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     private fun addTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         changeAttribute<Part, PartChange>(connectionData,
             message,
-            selector = { it.trackToAdd },
+            validator = { it.trackToAdd != null && it.validate() },
             dataSetter = { p, c -> setTrack(p, c) },
             dataGetter = { l, c -> findPart(l, c) },
             messageToSend = { _, c -> IntentWrapper(intent, NewTrackResponse(c.partId, c.trackToAdd!!)).payload() })
@@ -59,25 +69,45 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         changeAttribute<Part, PartChange>(connectionData,
             message,
-            selector = { it.trackToRemove },
+            validator = { it.trackToRemove != null && it.validate() },
             dataSetter = { p, c -> p.tracks.removeIf { it.id == c.trackToRemove!! } },
             dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.bpm }, dataSetter = { p, c -> p.bpm = c.bpm!! }, dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            validator = { it.bpm != null && it.validate() },
+            dataSetter = { p, c -> p.bpm = c.bpm!! },
+            dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeBars(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.bars }, dataSetter = { p, c -> p.bars = c.bars!! }, dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            validator = { it.bars != null && it.validate() },
+            dataSetter = { p, c -> p.bars = c.bars!! },
+            dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeSigUpper(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.sigUpper }, dataSetter = { p, c -> p.sigUpper = c.sigUpper!! }, dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            validator = { it.sigUpper != null && it.validate() },
+            dataSetter = { p, c -> p.sigUpper = c.sigUpper!! },
+            dataGetter = { l, c -> findPart(l, c) })
     }
 
     private fun changeSigLower(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData, message, selector = { it.sigLower }, dataSetter = { p, c -> p.sigLower = c.sigLower!! }, dataGetter = { l, c -> findPart(l, c) })
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            validator = { it.sigLower != null && it.validate() },
+            dataSetter = { p, c -> p.sigLower = c.sigLower!! },
+            dataGetter = { l, c -> findPart(l, c) })
     }
 
 
