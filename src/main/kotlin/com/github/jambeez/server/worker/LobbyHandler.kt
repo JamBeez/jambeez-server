@@ -9,7 +9,8 @@ import com.github.jambeez.server.domain.intent.IntentWrapper
 import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
-data class JoinRequest(val sessionId: String)
+
+data class JoinRequest(@JsonProperty("lobby_id") val lobbyId: String)
 data class Parts(val parts: MutableList<Part>)
 data class PartId(@JsonProperty("part_id") val partId: String)
 
@@ -35,7 +36,7 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
     private fun joinLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
         val joinRequest: JoinRequest = objectMapper.readValueOrNull(message.payload)
             ?: throw WorkerException("JoinRequest object could not be deserialized")
-        val lobby = domainController.joinLobby(joinRequest.sessionId, connectionData.user)
+        val lobby = domainController.joinLobby(joinRequest.lobbyId, connectionData.user)
 
         // Send lobby to me
         IntentWrapper(intent, lobby).send(connectionData)
