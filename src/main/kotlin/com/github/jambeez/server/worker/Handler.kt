@@ -4,6 +4,7 @@ import com.github.jambeez.server.*
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Lobby
 import org.springframework.web.socket.TextMessage
+import org.springframework.web.socket.WebSocketMessage
 
 abstract class Handler(protected val domainController: DomainController, protected val lobbyInformer: LobbyInformer) {
     protected val objectMapper = createObjectMapper()
@@ -22,7 +23,8 @@ abstract class Handler(protected val domainController: DomainController, protect
         message: TextMessage,
         selector: (R) -> Any?,
         dataSetter: (D, R) -> Unit,
-        dataGetter: (Lobby, R) -> D
+        dataGetter: (Lobby, R) -> D,
+        messageToSend: (TextMessage, R) -> WebSocketMessage<*> = { m, _ -> m }
     ) {
         logger.debug("Try ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
         val lobby = findLobby(connectionData)
@@ -30,7 +32,8 @@ abstract class Handler(protected val domainController: DomainController, protect
         val data = dataGetter(lobby, changeRequest)
         dataSetter(data, changeRequest)
         logger.debug("Success ChangeAttribute ${D::class.java.simpleName} ${R::class.java.simpleName} from User ${connectionData.user}")
-        lobbyInformer.informAllOtherUsers(lobby, null, message)
+        // lobbyInformer.informAllOtherUsers(lobby, null, message)
+        lobbyInformer.informAllOtherUsers(lobby, null, messageToSend(message, changeRequest))
     }
 
 

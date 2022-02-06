@@ -6,6 +6,8 @@ import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.Lobby
 import com.github.jambeez.server.domain.Part
+import com.github.jambeez.server.domain.Track
+import com.github.jambeez.server.domain.intent.IntentWrapper
 import org.springframework.web.socket.TextMessage
 
 
@@ -16,8 +18,10 @@ data class PartChange(
     val bars: Int? = null,
     @JsonProperty("sig_lower") val sigLower: Int? = null,
     @JsonProperty("sig_upper") val sigUpper: Int? = null,
-    @JsonProperty("track_id")
-    val trackToRemove: String? = null
+    @JsonProperty("track_to_remove")
+    val trackToRemove: String? = null,
+    @JsonProperty("track_to_add")
+    val trackToAdd: Track? = null
 )
 
 class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
@@ -33,6 +37,17 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
             PART_REMOVE_TRACK -> removeTrack(connectionData, message, intent)
             else -> unknown(PartHandler::class.java, connectionData, intent)
         }
+    }
+
+    private fun addTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
+            message,
+            selector = { it.trackToAdd },
+            dataSetter = { p, c -> p.tracks.add(c.trackToAdd!!) },
+            dataGetter = { l, c -> findPart(l, c) },
+            messageToSend = { _, c -> IntentWrapper(intent, c.trackToAdd!!).payload() }
+        )
     }
 
     private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
