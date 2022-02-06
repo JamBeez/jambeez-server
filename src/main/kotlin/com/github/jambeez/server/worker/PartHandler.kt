@@ -10,11 +10,13 @@ import org.springframework.web.socket.TextMessage
 
 
 data class PartChange(
+    @JsonProperty("part_id")
     val partId: String,
     val bpm: Int? = null,
     val bars: Int? = null,
     @JsonProperty("sig_lower") val sigLower: Int? = null,
     @JsonProperty("sig_upper") val sigUpper: Int? = null,
+    @JsonProperty("track_id")
     val trackToRemove: String? = null
 )
 

@@ -1,5 +1,6 @@
 package com.github.jambeez.server.worker
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.jambeez.server.LobbyInformer
 import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
@@ -9,7 +10,9 @@ import com.github.jambeez.server.setAll
 import org.springframework.web.socket.TextMessage
 
 data class TrackChange(
+    @JsonProperty("part_id")
     val partId: String,
+    @JsonProperty("track_id")
     val trackId: String,
     val mute: Boolean? = null,
     val sample: String? = null,

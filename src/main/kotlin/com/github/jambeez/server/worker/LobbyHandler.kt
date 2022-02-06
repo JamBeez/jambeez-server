@@ -1,5 +1,6 @@
 package com.github.jambeez.server.worker
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.github.jambeez.server.LobbyInformer
 import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
@@ -10,7 +11,7 @@ import org.springframework.web.socket.TextMessage
 
 data class JoinRequest(val sessionId: String)
 data class Parts(val parts: MutableList<Part>)
-data class PartId(val partId: String)
+data class PartId(@JsonProperty("part_id") val partId: String)
 
 class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
     Handler(domainController, lobbyInformer) {
