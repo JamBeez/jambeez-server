@@ -49,7 +49,7 @@ class DomainController {
     }
 
     private fun newLobbyId(): String {
-        val key = "${lobbyIdParts.random()}-${lobbyIdParts.random()}-${lobbyIdParts.random()}"
+        val key = "${lobbyIdParts.random()}_${lobbyIdParts.random()}_${lobbyIdParts.random()}"
         if (lobbies.any { l -> l.id == key }) return UUID.randomUUID().toString()
         return key
     }
