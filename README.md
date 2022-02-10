@@ -2,7 +2,7 @@
 
 ## Apache Config
 
-```
+```apache
 <VirtualHost *:443>
         ServerName FQDN
 
