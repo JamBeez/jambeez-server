@@ -1,7 +1,5 @@
 package com.github.jambeez.server.worker
 
-import com.github.jambeez.server.LobbyInformer
-import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.IntentWrapper

@@ -1,7 +1,7 @@
 package com.github.jambeez.server.domain
 
-import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.logger
+import com.github.jambeez.server.worker.WebsocketConnectionData
 import org.springframework.core.io.ClassPathResource
 import java.util.*
 

@@ -1,10 +1,8 @@
 package com.github.jambeez.server.worker
 
-import com.github.jambeez.server.LobbyInformer
-import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.domain.DomainController
 import com.github.jambeez.server.domain.intent.IntentMessage
-import com.github.jambeez.server.logger
+import com.github.jambeez.server.worker.Handler.Companion.unknown
 import org.springframework.web.socket.TextMessage
 
 class JamWorker(
@@ -15,14 +13,14 @@ class JamWorker(
     private val intent: String
 ) : Runnable {
     override fun run() {
-        val globalIntent = intent.split(Regex(":"))[0]
+        val rootIntent = intent.split(Regex(":"))[0]
         try {
-            when (globalIntent) {
+            when (rootIntent) {
                 LOBBY -> LobbyHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 USER -> UserHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 PART -> PartHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
                 TRACK -> TrackHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
-                else -> unknown(null, connectionData, intent)
+                else -> unknown<Handler>(null, connectionData, intent)
             }
         } catch (e: Exception) {
             connectionData.websocketSession.sendMessage(IntentMessage("error:$intent", e.message ?: "").payload())
@@ -30,9 +28,3 @@ class JamWorker(
     }
 }
 
-fun unknown(clazz: Class<*>?, connectionData: WebsocketConnectionData, intent: String) {
-    logger.error("Got unknown intent: $intent")
-    IntentMessage("error:$intent", "Unknown intent $intent. Selected Handler: ${clazz ?: "UNKNOWN"}").send(
-        connectionData
-    )
-}

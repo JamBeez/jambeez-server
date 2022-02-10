@@ -1,7 +1,7 @@
 package com.github.jambeez.server.domain.intent
 
-import com.github.jambeez.server.WebsocketConnectionData
 import com.github.jambeez.server.createObjectMapper
+import com.github.jambeez.server.worker.WebsocketConnectionData
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketMessage
 import org.springframework.web.socket.WebSocketSession

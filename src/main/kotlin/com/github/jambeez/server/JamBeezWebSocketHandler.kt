@@ -7,20 +7,14 @@ import com.github.jambeez.server.domain.User
 import com.github.jambeez.server.domain.intent.Intent
 import com.github.jambeez.server.domain.intent.IntentMessage
 import com.github.jambeez.server.worker.JamWorker
+import com.github.jambeez.server.worker.LobbyInformer
+import com.github.jambeez.server.worker.WebsocketConnectionData
 import org.springframework.web.socket.*
 import org.springframework.web.socket.handler.AbstractWebSocketHandler
 import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
-
-interface LobbyInformer {
-    fun informAllOtherUsers(lobby: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>)
-}
-
-data class WebsocketConnectionData(
-    val websocketSession: WebSocketSession, val user: User
-)
 
 class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
     private val objectMapper: ObjectMapper = createObjectMapper()
