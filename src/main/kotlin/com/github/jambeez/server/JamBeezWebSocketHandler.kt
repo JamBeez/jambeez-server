@@ -9,12 +9,12 @@ import com.github.jambeez.server.domain.intent.IntentMessage
 import com.github.jambeez.server.worker.JamWorker
 import com.github.jambeez.server.worker.LobbyInformer
 import com.github.jambeez.server.worker.WebsocketConnectionData
-import org.springframework.web.socket.*
-import org.springframework.web.socket.handler.AbstractWebSocketHandler
-import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
+import org.springframework.web.socket.*
+import org.springframework.web.socket.handler.AbstractWebSocketHandler
+import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorator
 
 class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
     private val objectMapper: ObjectMapper = createObjectMapper()
@@ -27,23 +27,23 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
 
     override fun afterConnectionEstablished(session: WebSocketSession) {
         logger.debug("Connection Established to $session")
-        connections[session.id] = WebsocketConnectionData(
-            ConcurrentWebSocketSessionDecorator(session, 2000, 4096),
-            domainController.createUser()
-        )
-        logger.info("New connected client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
+        connections[session.id] =
+            WebsocketConnectionData(
+                ConcurrentWebSocketSessionDecorator(session, 2000, 4096),
+                domainController.createUser())
+        logger.info(
+            "New connected client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
         super.afterConnectionEstablished(session)
     }
-
 
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
         logger.debug("Connection closed to $session")
         domainController.end(connections[session.id])
         connections.remove(session.id)
-        logger.info("Lost a client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
+        logger.info(
+            "Lost a client. #Lobbies: ${domainController.amountOfLobbies()} #Clients: ${connections.size}")
         super.afterConnectionClosed(session, status)
     }
-
 
     override fun handleBinaryMessage(session: WebSocketSession, message: BinaryMessage) {
         logger.debug("Got Binary Message from $session : $message")
@@ -55,7 +55,6 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
             logger.error(e.message, e)
             IntentMessage("error:binary_not_string", "Binary content is no string").send(session)
         }
-
     }
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
@@ -70,8 +69,15 @@ class JamBeezWebSocketHandler : AbstractWebSocketHandler(), LobbyInformer {
         executors.submit(JamWorker(domainController, this, connectionData, message, intent.intent))
     }
 
-    override fun informAllOtherUsers(lobby: Lobby, user: User?, webSocketMessage: WebSocketMessage<*>) {
-        val connections = connections.values.filter { wssd -> wssd.user != user && lobby.users.contains(wssd.user) }
+    override fun informAllOtherUsers(
+        lobby: Lobby,
+        user: User?,
+        webSocketMessage: WebSocketMessage<*>
+    ) {
+        val connections =
+            connections.values.filter { wssd ->
+                wssd.user != user && lobby.users.contains(wssd.user)
+            }
         connections.forEach { wssd -> wssd.websocketSession.sendMessage(webSocketMessage) }
     }
 }

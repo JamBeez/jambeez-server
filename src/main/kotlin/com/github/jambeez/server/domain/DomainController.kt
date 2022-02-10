@@ -2,21 +2,14 @@ package com.github.jambeez.server.domain
 
 import com.github.jambeez.server.logger
 import com.github.jambeez.server.worker.WebsocketConnectionData
-import org.springframework.core.io.ClassPathResource
 import java.util.*
+import org.springframework.core.io.ClassPathResource
 
 class DomainController {
 
     private val users: MutableList<User> = mutableListOf()
 
-    // TODO REMOVE DEBUG LOBBY
-    private val lobbies: MutableList<Lobby> = mutableListOf(
-        Lobby(
-            "DEBUG",
-            users = mutableListOf(User("DEBUG_UID")),
-            parts = mutableListOf(Part(tracks = mutableListOf(Track("TRACK_DEBUG", sample = "0", beats = List(16, { Math.random() < 0.5 }).toMutableList()))))
-        )
-    )
+    private val lobbies: MutableList<Lobby> = mutableListOf()
 
     private val lobbyIdParts: List<String>
 
@@ -62,7 +55,9 @@ class DomainController {
             throw IllegalArgumentException("User already in Lobby")
         }
 
-        val lobby = lobbies.find { s -> s.id == sessionId } ?: throw IllegalArgumentException("Your jam session does not exist :(")
+        val lobby =
+            lobbies.find { s -> s.id == sessionId }
+                ?: throw IllegalArgumentException("Your jam session does not exist :(")
         lobby.users.add(user)
         logger.debug("User $user successfully joined Lobby: $lobby")
         return lobby
@@ -79,7 +74,5 @@ class DomainController {
             logger.debug("Remove Lobby $lobby")
             lobbies.remove(lobby)
         }
-
-
     }
 }

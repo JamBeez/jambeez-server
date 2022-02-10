@@ -9,17 +9,23 @@ import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 import org.springframework.web.socket.WebSocketMessage
 
-abstract class Handler(protected val domainController: DomainController, protected val lobbyInformer: LobbyInformer) {
+abstract class Handler(
+    protected val domainController: DomainController,
+    protected val lobbyInformer: LobbyInformer
+) {
     protected val objectMapper = createObjectMapper()
 
-
     @Throws(WorkerException::class)
-    abstract fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String)
+    abstract fun handle(
+        connectionData: WebsocketConnectionData,
+        message: TextMessage,
+        intent: String
+    )
 
     protected fun findLobby(connectionData: WebsocketConnectionData): Lobby {
-        return domainController.findLobby(connectionData.user) ?: throw WorkerException("User not in Lobby")
+        return domainController.findLobby(connectionData.user)
+            ?: throw WorkerException("User not in Lobby")
     }
-
 
     protected inline fun <reified SubjectOfChange, reified ChangeRequest> changeAttribute(
         connectionData: WebsocketConnectionData,
@@ -38,22 +44,30 @@ abstract class Handler(protected val domainController: DomainController, protect
         lobbyInformer.informAllOtherUsers(lobby, null, messageForBroadcast(message, changeRequest))
     }
 
+    protected inline fun <reified R> readChangeRequest(
+        message: TextMessage,
+        changeRequestValidator: (R) -> Boolean
+    ): R {
+        val changeRequest: R =
+            objectMapper.readValueOrNull(message.payload)
+                ?: throw WorkerException("ChangeRequest could not be deserialized")
 
-    protected inline fun <reified R> readChangeRequest(message: TextMessage, changeRequestValidator: (R) -> Boolean): R {
-        val changeRequest: R = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("ChangeRequest could not be deserialized")
-
-        if (!changeRequestValidator(changeRequest)) throw WorkerException("ChangeRequest incomplete or invalid")
+        if (!changeRequestValidator(changeRequest))
+            throw WorkerException("ChangeRequest incomplete or invalid")
         return changeRequest
     }
 
-
     companion object {
-        fun <H : Handler> unknown(clazz: Class<H>?, connectionData: WebsocketConnectionData, intent: String) {
+        fun <H : Handler> unknown(
+            clazz: Class<H>?,
+            connectionData: WebsocketConnectionData,
+            intent: String
+        ) {
             logger.error("Got unknown intent: $intent")
-            IntentMessage("error:$intent", "Unknown intent $intent. Selected Handler: ${clazz ?: "UNKNOWN"}").send(
-                connectionData
-            )
+            IntentMessage(
+                    "error:$intent",
+                    "Unknown intent $intent. Selected Handler: ${clazz ?: "UNKNOWN"}")
+                .send(connectionData)
         }
     }
-
 }

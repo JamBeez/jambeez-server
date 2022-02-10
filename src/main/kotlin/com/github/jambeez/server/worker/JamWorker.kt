@@ -16,15 +16,23 @@ class JamWorker(
         val rootIntent = intent.split(Regex(":"))[0]
         try {
             when (rootIntent) {
-                LOBBY -> LobbyHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
-                USER -> UserHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
-                PART -> PartHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
-                TRACK -> TrackHandler(domainController, lobbyInformer).handle(connectionData, message, intent)
+                LOBBY ->
+                    LobbyHandler(domainController, lobbyInformer)
+                        .handle(connectionData, message, intent)
+                USER ->
+                    UserHandler(domainController, lobbyInformer)
+                        .handle(connectionData, message, intent)
+                PART ->
+                    PartHandler(domainController, lobbyInformer)
+                        .handle(connectionData, message, intent)
+                TRACK ->
+                    TrackHandler(domainController, lobbyInformer)
+                        .handle(connectionData, message, intent)
                 else -> unknown<Handler>(null, connectionData, intent)
             }
         } catch (e: Exception) {
-            connectionData.websocketSession.sendMessage(IntentMessage("error:$intent", e.message ?: "").payload())
+            connectionData.websocketSession.sendMessage(
+                IntentMessage("error:$intent", e.message ?: "").payload())
         }
     }
 }
-

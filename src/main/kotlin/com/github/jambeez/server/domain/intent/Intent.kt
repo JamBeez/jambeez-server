@@ -7,8 +7,7 @@ import org.springframework.web.socket.WebSocketMessage
 import org.springframework.web.socket.WebSocketSession
 
 open class Intent(val intent: String) {
-    @Transient
-    protected val objectMapper = createObjectMapper()
+    @Transient protected val objectMapper = createObjectMapper()
 
     open fun payload(): WebSocketMessage<*> {
         val dataString = objectMapper.writeValueAsString(this)

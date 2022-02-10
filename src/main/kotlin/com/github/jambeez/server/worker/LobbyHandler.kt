@@ -8,9 +8,13 @@ import com.github.jambeez.server.logger
 import com.github.jambeez.server.readValueOrNull
 import org.springframework.web.socket.TextMessage
 
-
-class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
-    override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
+    Handler(domainController, lobbyInformer) {
+    override fun handle(
+        connectionData: WebsocketConnectionData,
+        message: TextMessage,
+        intent: String
+    ) {
         when (intent) {
             LOBBY_CREATE -> createLobby(connectionData, intent)
             LOBBY_JOIN -> joinLobby(connectionData, message, intent)
@@ -35,23 +39,28 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
         IntentWrapper(intent, session).send(connectionData)
     }
 
-
-    private fun joinLobby(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        val joinRequest: JoinRequest = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("JoinRequest object could not be deserialized")
+    private fun joinLobby(
+        connectionData: WebsocketConnectionData,
+        message: TextMessage,
+        intent: String
+    ) {
+        val joinRequest: JoinRequest =
+            objectMapper.readValueOrNull(message.payload)
+                ?: throw WorkerException("JoinRequest object could not be deserialized")
         val lobby = domainController.joinLobby(joinRequest.lobbyId, connectionData.user)
 
         // Send lobby to me
         IntentWrapper(intent, lobby).send(connectionData)
         // Send to others
         lobbyInformer.informAllOtherUsers(
-            lobby, connectionData.user, IntentWrapper(USER_JOINED, connectionData.user).payload()
-        )
+            lobby, connectionData.user, IntentWrapper(USER_JOINED, connectionData.user).payload())
     }
-
 
     private fun updateParts(connectionData: WebsocketConnectionData, message: TextMessage) {
         val lobby = findLobby(connectionData)
-        val parts: Parts = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("Parts could not be deserialized")
+        val parts: Parts =
+            objectMapper.readValueOrNull(message.payload)
+                ?: throw WorkerException("Parts could not be deserialized")
         if (!parts.parts.all { it.validate() }) throw WorkerException("Part validation failed")
         lobby.parts.clear()
         lobby.parts.addAll(parts.parts)
@@ -61,8 +70,12 @@ class LobbyHandler(domainController: DomainController, lobbyInformer: LobbyInfor
 
     private fun removePart(connectionData: WebsocketConnectionData, message: TextMessage) {
         val lobby = findLobby(connectionData)
-        val partId: PartId = objectMapper.readValueOrNull(message.payload) ?: throw WorkerException("PartID could not be deserialized")
-        val part = lobby.parts.find { p -> p.id == partId.partId } ?: throw WorkerException("Part could not be found")
+        val partId: PartId =
+            objectMapper.readValueOrNull(message.payload)
+                ?: throw WorkerException("PartID could not be deserialized")
+        val part =
+            lobby.parts.find { p -> p.id == partId.partId }
+                ?: throw WorkerException("Part could not be found")
         lobby.parts.remove(part)
 
         lobbyInformer.informAllOtherUsers(lobby, null, message)

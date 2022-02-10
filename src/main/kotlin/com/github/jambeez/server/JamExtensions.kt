@@ -16,12 +16,13 @@ fun createObjectMapper(): ObjectMapper {
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     objectMapper.setVisibility(
-        objectMapper.serializationConfig.defaultVisibilityChecker //
-            .withFieldVisibility(JsonAutoDetect.Visibility.ANY)//
-            .withGetterVisibility(JsonAutoDetect.Visibility.NONE)//
-            .withSetterVisibility(JsonAutoDetect.Visibility.NONE)//
-            .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE)
-    )
+        objectMapper
+            .serializationConfig
+            .defaultVisibilityChecker //
+            .withFieldVisibility(JsonAutoDetect.Visibility.ANY) //
+            .withGetterVisibility(JsonAutoDetect.Visibility.NONE) //
+            .withSetterVisibility(JsonAutoDetect.Visibility.NONE) //
+            .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE))
     return objectMapper
 }
 
@@ -42,7 +43,6 @@ inline fun <reified T> ObjectMapper.readValueOrNull(data: String): T? {
         return null
     }
 }
-
 
 fun <E> MutableList<E>.setAll(newElems: MutableList<E>) {
     this.clear()

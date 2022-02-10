@@ -8,11 +8,14 @@ import com.github.jambeez.server.domain.Track
 import com.github.jambeez.server.domain.intent.IntentWrapper
 import org.springframework.web.socket.TextMessage
 
+class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) :
+    Handler(domainController, lobbyInformer) {
 
-class PartHandler(domainController: DomainController, lobbyInformer: LobbyInformer) : Handler(domainController, lobbyInformer) {
-
-
-    override fun handle(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
+    override fun handle(
+        connectionData: WebsocketConnectionData,
+        message: TextMessage,
+        intent: String
+    ) {
         when (intent) {
             PART_CHANGE_BPM -> changeBPM(connectionData, message)
             PART_CHANGE_BARS -> changeBars(connectionData, message)
@@ -24,13 +27,20 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
         }
     }
 
-    private fun addTrack(connectionData: WebsocketConnectionData, message: TextMessage, intent: String) {
-        changeAttribute<Part, PartChange>(connectionData,
+    private fun addTrack(
+        connectionData: WebsocketConnectionData,
+        message: TextMessage,
+        intent: String
+    ) {
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.trackToAdd != null && it.validate() },
             changeApplier = { p, c -> setTrack(p, c) },
             subjectFinder = { l, c -> findPart(l, c) },
-            messageForBroadcast = { _, c -> IntentWrapper(intent, NewTrackResponse(c.partId, c.trackToAdd!!)).payload() })
+            messageForBroadcast = { _, c ->
+                IntentWrapper(intent, NewTrackResponse(c.partId, c.trackToAdd!!)).payload()
+            })
     }
 
     private fun setTrack(p: Part, c: PartChange) {
@@ -41,7 +51,8 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun removeTrack(connectionData: WebsocketConnectionData, message: TextMessage) {
-        changeAttribute<Part, PartChange>(connectionData,
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.trackToRemove != null && it.validate() },
             changeApplier = { p, c -> p.tracks.removeIf { it.id == c.trackToRemove!! } },
@@ -49,7 +60,8 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeBPM(connectionData: WebsocketConnectionData, message: TextMessage) {
-        changeAttribute<Part, PartChange>(connectionData,
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.bpm != null && it.validate() },
             changeApplier = { p, c -> p.bpm = c.bpm!! },
@@ -57,7 +69,8 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeBars(connectionData: WebsocketConnectionData, message: TextMessage) {
-        changeAttribute<Part, PartChange>(connectionData,
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.bars != null && it.validate() },
             changeApplier = { p, c -> p.bars = c.bars!! },
@@ -65,7 +78,8 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeSigUpper(connectionData: WebsocketConnectionData, message: TextMessage) {
-        changeAttribute<Part, PartChange>(connectionData,
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.sigUpper != null && it.validate() },
             changeApplier = { p, c -> p.sigUpper = c.sigUpper!! },
@@ -73,16 +87,17 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private fun changeSigLower(connectionData: WebsocketConnectionData, message: TextMessage) {
-        changeAttribute<Part, PartChange>(connectionData,
+        changeAttribute<Part, PartChange>(
+            connectionData,
             message,
             changeRequestValidator = { it.sigLower != null && it.validate() },
             changeApplier = { p, c -> p.sigLower = c.sigLower!! },
             subjectFinder = { l, c -> findPart(l, c) })
     }
 
-
     private fun findPart(lobby: Lobby, partChange: PartChange): Part {
-        return lobby.parts.find { p -> p.id == partChange.partId } ?: throw WorkerException("Invalid PartId")
+        return lobby.parts.find { p -> p.id == partChange.partId }
+            ?: throw WorkerException("Invalid PartId")
     }
 
     private data class PartChange(
@@ -105,6 +120,7 @@ class PartHandler(domainController: DomainController, lobbyInformer: LobbyInform
     }
 
     private data class NewTrackResponse(
-        @JsonProperty("part_id") val partId: String, @JsonProperty("track_to_add") val trackToAdd: Track
+        @JsonProperty("part_id") val partId: String,
+        @JsonProperty("track_to_add") val trackToAdd: Track
     )
 }
