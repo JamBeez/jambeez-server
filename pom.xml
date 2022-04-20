@@ -13,7 +13,7 @@
     <description>JamBeez Server Code</description>
     <properties>
         <java.version>17</java.version>
-        <kotlin.version>1.6.20</kotlin.version>
+        <kotlin.version>1.6.21</kotlin.version>
         <spotless.version>2.22.1</spotless.version>
     </properties>
     <dependencies>
