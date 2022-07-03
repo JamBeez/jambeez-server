@@ -101,9 +101,9 @@ class TrackHandler(domainController: DomainController, lobbyInformer: LobbyInfor
     }
 
     private fun findTrack(lobby: Lobby, trackChange: TrackChange): Track {
-        return lobby.parts.find { p -> p.id == trackChange.partId }?.tracks?.find { t ->
-            t.id == trackChange.trackId
-        }
+        return lobby.parts
+            .find { p -> p.id == trackChange.partId }
+            ?.tracks?.find { t -> t.id == trackChange.trackId }
             ?: throw WorkerException("Track not found")
     }
 

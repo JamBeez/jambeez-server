@@ -16,9 +16,7 @@ fun createObjectMapper(): ObjectMapper {
     objectMapper.configure(SerializationFeature.INDENT_OUTPUT, true)
     objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
     objectMapper.setVisibility(
-        objectMapper
-            .serializationConfig
-            .defaultVisibilityChecker //
+        objectMapper.serializationConfig.defaultVisibilityChecker //
             .withFieldVisibility(JsonAutoDetect.Visibility.ANY) //
             .withGetterVisibility(JsonAutoDetect.Visibility.NONE) //
             .withSetterVisibility(JsonAutoDetect.Visibility.NONE) //
