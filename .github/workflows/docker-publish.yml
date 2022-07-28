@@ -14,9 +14,6 @@ on:
     tags:
       - v*
 
-env:
-  IMAGE_NAME: jambeez-server
-
 jobs:
   push:
     uses: dfuchss/actions/.github/workflows/docker.yml@main
