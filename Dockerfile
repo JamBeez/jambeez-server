@@ -1,4 +1,4 @@
-FROM maven:3-eclipse-temurin-17 as builder
+FROM maven:3-eclipse-temurin-19 as builder
 
 WORKDIR /usr/src/jambeez
 COPY src src
